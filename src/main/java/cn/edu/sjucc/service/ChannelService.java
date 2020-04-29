@@ -1,8 +1,11 @@
 package cn.edu.sjucc.service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -10,9 +13,11 @@ import org.springframework.stereotype.Service;
 
 import cn.edu.sjucc.dao.ChannelRepository;
 import cn.edu.sjucc.model.Channel;
+import cn.edu.sjucc.model.Comment;
 
 @Service
 public class ChannelService {
+	public static final Logger logger = LoggerFactory.getLogger(ChannelService.class);
 	@Autowired
 	private ChannelRepository repo;
 	
@@ -114,5 +119,54 @@ public class ChannelService {
 	public List<Channel> findChannelsPage(int page){
 		Page<Channel> p = repo.findAll(PageRequest.of(page,3));
 		return p.toList();
+	}
+	
+	/**
+	 * 向指定频道追加一条评论
+	 * @param channelId	目标评论的编号
+	 * @param comment	即将添加的评论
+	 */
+	public Channel addComment(String channelId, Comment comment) {
+		Channel result = null;
+		Channel saved = getChannel(channelId);
+		if (null != saved) {	//数据中有该评论
+			saved.addComment(comment);
+			result = repo.save(saved);
+		}
+		return result;
+	}
+	
+	/**
+	 * 获取目标频道的热门评论。
+	 * @param channelId
+	 * @return
+	 */
+	public List<Comment> hotComments(String channelId){
+		List<Comment> result = null;
+		Channel saved = getChannel(channelId);
+		if(saved != null) {
+				result = saved.getComments();
+				result.sort(new Comparator<Comment>() {
+				@Override
+				public int compare(Comment o1, Comment o2) {
+					//若o1比o2小，则返回负数；若o1比o2大，则返回正数；若o1等于o2，则返回0。
+					int re = 0;
+					if (o1.getStar() > o2.getStar()) {
+						re = -1;
+					}else if(o1.getStar() < o2.getStar()) {
+						re = 1;
+					}
+					return re;
+				}
+			});
+			if (result.size()>3) {
+				result = result.subList(0, 3);
+			}
+			logger.debug("热门评论有" +result.size()+ "条...");
+			logger.debug(result.toString());
+		}else {
+			logger.warn("指定的频道不存在，id=" +channelId);
+		}
+		return result;
 	}
 }

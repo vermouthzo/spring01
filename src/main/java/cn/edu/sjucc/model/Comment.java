@@ -2,12 +2,14 @@ package cn.edu.sjucc.model;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 	/**
 	 * 
 	 * @author lenovo
 	 *
 	 */
-public class Comment {
+	public class Comment {
 	/**
 	 * 	评论作者
 	 */
@@ -19,11 +21,12 @@ public class Comment {
 	/**
 	 * 	评论点赞数量
 	 */
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	private int star = 0;
 	/**
 	 *	评论内容
 	 */
-	private String cotent;
+	private String content;
 	public String getAuthor() {
 		return author;
 	}
@@ -42,15 +45,15 @@ public class Comment {
 	public void setStar(int star) {
 		this.star = star;
 	}
-	public String getCotent() {
-		return cotent;
+	public String getContent() {
+		return content;
 	}
-	public void setCotent(String cotent) {
-		this.cotent = cotent;
+	public void setContent(String content) {
+		this.content = content;
 	}
 	@Override
 	public String toString() {
-		return "Comment [author=" + author + ", dt=" + dt + ", star=" + star + ", cotent=" + cotent + "]";
+		return "Comment [author=" + author + ", dt=" + dt + ", star=" + star + ", content=" + content + "]";
 	}
 	@Override
 	public int hashCode() {
