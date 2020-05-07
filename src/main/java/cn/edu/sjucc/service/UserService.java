@@ -23,7 +23,17 @@ public class UserService {
 	public User createUser(User user) {
 		logger.debug("用户注册: " +user);
 		User result = null;
+		//TODO 1.检查
 		result = repo.save(user);
+		return result;
+	}
+	
+	public boolean checkUser(String username, String password) {
+		boolean result = false;
+		User u = repo.findOneByUsernameAndPassword(username, password);
+		if(null != u) {
+			result = true;
+		}
 		return result;
 	}
 }

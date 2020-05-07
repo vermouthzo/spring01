@@ -3,6 +3,8 @@ package cn.edu.sjucc.api;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,4 +27,18 @@ public class UserController {
 		User saved = service.createUser(u);
 		return saved;
 	}
+	
+	@GetMapping("/login/{username}/{password}")
+	public int login(@PathVariable String username, @PathVariable String password) {
+		int result = 0;
+		//FIXME
+		logger.debug("用户：" +username+"准备登录，密码是："+password);
+		boolean status = service.checkUser(username, password);
+		if(status) {
+			result = 1;
+		}
+		return result;
+	}
+	
+	
 }
