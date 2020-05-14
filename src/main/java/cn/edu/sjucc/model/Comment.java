@@ -1,15 +1,17 @@
 package cn.edu.sjucc.model;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-
-	/**
-	 * 
-	 * @author lenovo
-	 *
-	 */
-	public class Comment {
+/**
+ * 
+ * @author lenovo
+ *
+ */
+public class Comment implements Serializable{
+	public static final long serialVersionUID = 86543543543546543L;
+	
 	/**
 	 * 	评论作者
 	 */
@@ -17,11 +19,11 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 	/**
 	 * 	评论时间
 	 */
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	private LocalDateTime dt = LocalDateTime.now();
 	/**
 	 * 	评论点赞数量
 	 */
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	private int star = 0;
 	/**
 	 *	评论内容
@@ -79,3 +81,4 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 		return true;
 	}
 }
+

@@ -1,5 +1,6 @@
 package cn.edu.sjucc.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +15,9 @@ import org.springframework.data.annotation.Id;
  * @author lenovo
  *
  */
-public class Channel {
+public class Channel implements Serializable {
+	
+	public static final long serialVersionUID = 8654354354354546546L;
 	
 	@Id
 	private String id;

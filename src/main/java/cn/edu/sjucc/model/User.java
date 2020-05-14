@@ -14,6 +14,9 @@ import java.time.LocalDateTime;
  *
  */
 public class User {
+	
+	public static final String CACHE_NAME = "users";
+	
 	private String id;
 	private String username;
 	private String password;

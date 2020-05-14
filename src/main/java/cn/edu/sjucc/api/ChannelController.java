@@ -5,6 +5,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.Cache.ValueWrapper;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,12 +20,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cn.edu.sjucc.model.Channel;
 import cn.edu.sjucc.model.Comment;
+import cn.edu.sjucc.model.User;
 import cn.edu.sjucc.service.ChannelService;
 
 @RestController
 @RequestMapping("/channel")
 public class ChannelController {
 	public static final Logger logger = LoggerFactory.getLogger(ChannelController.class);
+	
+	@Autowired
+	public CacheManager cacheManager;
 	
 	@Autowired
 	private ChannelService service;
@@ -37,7 +44,7 @@ public class ChannelController {
 	
 	@GetMapping("/{id}")
 	public Channel getChannel(@PathVariable String id) {
-		logger.info("���ڶ�ȡ����Ƶ����Ϣ������");
+		//logger.info("���ڶ�ȡ����Ƶ����Ϣ������");
 		Channel c = service.getChannel(id);
 		if(c != null) {
 			return c;
@@ -96,8 +103,18 @@ public class ChannelController {
 	public Channel addComment(@PathVariable String channelId, @RequestBody Comment comment) {
 		Channel result = null;
 		logger.debug("即将评论频道：" +channelId+ ",评论对象："+comment);
-		//TODO 把评论保存到数据库
-		result = service.addComment(channelId, comment);
+		//先检查用户是否登录过
+		Cache cache = cacheManager.getCache(User.CACHE_NAME);
+		ValueWrapper obj = cache.get("current_user");
+		if(obj == null) {
+			logger.warn("用户未登录！");
+		} else {
+			//把评论保存到数据库
+			String username = (String) obj.get();
+			logger.debug("登录用户"+username+"正在评论...");
+			comment.setAuthor(username.toString());
+			result = service.addComment(channelId, comment);
+		}
 		return result;
 	}
 	

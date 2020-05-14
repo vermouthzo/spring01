@@ -7,6 +7,9 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -26,7 +29,9 @@ public class ChannelService {
 	 * 
 	 * @return	频道List
 	 */
+	@Cacheable(cacheNames="channels", key="'all_channesls'")
 	public List<Channel> getAllChannels(){
+		logger.debug("从数据库中读取所有频道信息...");
 		return repo.findAll();
 	}
 	
@@ -36,7 +41,9 @@ public class ChannelService {
 	 * @param channelId 频道编号
 	 * @return 频道对象,若未找到则返回null
 	 */
+	@Cacheable(cacheNames="channels", key="#channelId")
 	public Channel getChannel(String channelId) {
+		logger.debug("从数据库中读取频道:"+channelId);
 		Optional<Channel> result = repo.findById(channelId);
 		
 		if(result.isPresent()){
@@ -64,7 +71,9 @@ public class ChannelService {
 	 * @param c 待保存的频道对象（没有id值）
 	 * @return 保存后的频道（有id值）
 	 */
+	@CachePut(cacheNames="channels", key="#result.id")
 	public Channel createChannel(Channel c){
+		logger.debug("从数据库中读取所有频道信息...");
 		return repo.save(c); //保存更新后的实体对象
 	}
 	
@@ -74,8 +83,9 @@ public class ChannelService {
 	 * @param c 新的频道信息，用于更新已存在的同一频道
 	 * @return 更新后的频道信息
 	 */
+	@CacheEvict(cacheNames="channels", key="'all_channesls'")
 	public Channel updateChannel(Channel c) {
-		//TODO 仅修改用户指定的属性
+		//仅修改用户指定的属性
 		Channel saved = getChannel(c.getId());
 		if (c.getTitle() != null) {
 			saved.setTitle(c.getTitle());
