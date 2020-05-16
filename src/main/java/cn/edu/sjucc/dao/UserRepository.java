@@ -5,5 +5,5 @@ import cn.edu.sjucc.model.User;
 
 public interface UserRepository extends MongoRepository<User, String> {
 	public User findOneByUsernameAndPassword(String username, String password);
-	
+	public User findOneByUsername(String username);
 }
