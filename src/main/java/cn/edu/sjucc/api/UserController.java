@@ -29,18 +29,14 @@ public class UserController {
 	private UserService service;
 	
 	@PostMapping("/register")
-	public Result register(@RequestBody User u) {
-		logger.debug("即将注册用户，用户数据：" +u);
-		Result result = new Result();
-		User saved = null;
+	public Result<User> register(@RequestBody User u) {
+		Result<User> result = new Result<>();
 		try {
-			saved = service.createUser(u);
-			result.setStatus(Result.OK);
-			result.setMessage("注册成功");
-			result.setDate(saved);
+			result = result.ok();
+			result.setData(service.createUser(u));
 		} catch (UserExistException e) {
 			logger.error("注册用户已存在。", e);
-			result.setStatus(Result.ERROR);
+			result = result.error();
 			result.setMessage("用户已存在!");
 		}
 		
@@ -48,17 +44,17 @@ public class UserController {
 	}
 	
 	@GetMapping("/login/{username}/{password}")
-	public Result login(@PathVariable String username, 
+	public Result<User> login(@PathVariable String username, 
 			@PathVariable String password) {
-		Result result = new Result();
+		Result<User> result = new Result<User>();
 		boolean status = service.checkUser(username, password);
 		if(status) {
-			result.setStatus(Result.OK);
+			result = result.ok();
 			//把用户存入缓存
 			Cache cache = cacheManager.getCache(User.CACHE_NAME);
 			cache.put("current_user", username);
 		}else {
-			result.setStatus(Result.ERROR);
+			result = result.error();
 		}
 		return result;
 	}
