@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,6 +24,7 @@ import cn.edu.sjucc.model.Comment;
 import cn.edu.sjucc.model.Result;
 import cn.edu.sjucc.model.User;
 import cn.edu.sjucc.service.ChannelService;
+import cn.edu.sjucc.service.UserService;
 
 @RestController
 @RequestMapping("/channel")
@@ -30,7 +32,7 @@ public class ChannelController {
 	public static final Logger logger = LoggerFactory.getLogger(ChannelController.class);
 	
 	@Autowired
-	public CacheManager cacheManager;
+	private UserService userService;
 	
 	@Autowired
 	private ChannelService service;
@@ -42,7 +44,7 @@ public class ChannelController {
 		List<Channel> channels = service.getAllChannels();
 		result.setStatus(Result.OK);
 		result.setMessage("所有频道信息");
-		result.setDate(channels);
+		result.setData(channels);
 		return result;
 	}
 	
@@ -54,7 +56,7 @@ public class ChannelController {
 		if(c != null) {
 			result.setStatus(Result.OK);
 			result.setMessage("找到一个频道");
-			result.setDate(c);
+			result.setData(c);
 		}else {
 			logger.error("找不到指定的频道");
 			result.setStatus(Result.ERROR);
@@ -85,7 +87,7 @@ public class ChannelController {
 		Channel saved = service.createChannel(c);
 		result.setStatus(Result.OK);
 		result.setMessage("新建频道成功");
-		result.setDate(saved);
+		result.setData(saved);
 		return result;
 	}
 	
@@ -96,7 +98,7 @@ public class ChannelController {
 		Channel update = service.updateChannel(c);
 		result.setStatus(Result.OK);
 		result.setMessage("更新频道成功");
-		result.setDate(update);
+		result.setData(update);
 		return result;
 	}
 	
@@ -121,21 +123,14 @@ public class ChannelController {
 	}
 	
 	@PostMapping("{channelId}/comment")
-	public Channel addComment(@PathVariable String channelId, @RequestBody Comment comment) {
+	public Channel addComment(@RequestHeader("token") String token, @PathVariable String channelId, @RequestBody Comment comment) {
 		Channel result = null;
-		logger.debug("即将评论频道：" +channelId+ ",评论对象："+comment);
-		//先检查用户是否登录过
-		Cache cache = cacheManager.getCache(User.CACHE_NAME);
-		ValueWrapper obj = cache.get("current_user");
-		if(obj == null) {
-			logger.warn("用户未登录！");
-		} else {
-			//把评论保存到数据库
-			String username = (String) obj.get();
-			logger.debug("登录用户"+username+"正在评论...");
-			comment.setAuthor(username.toString());
-			result = service.addComment(channelId, comment);
-		}
+		//把评论保存到数据库
+		String username = userService.currentUser(token);
+		logger.debug("登录用户"+username+"正在评论...");
+		comment.setAuthor(username);
+		result = service.addComment(channelId, comment);
+				
 		return result;
 	}
 	
@@ -145,7 +140,7 @@ public class ChannelController {
 		logger.debug("获取频道" +channelId+ "的热门评论");
 		result.setStatus(Result.OK);
 		result.setMessage("更新频道成功");
-		result.setDate(service.hotComments(channelId));
+		result.setData(service.hotComments(channelId));
 		return result;
 	}
 }

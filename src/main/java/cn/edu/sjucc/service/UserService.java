@@ -1,13 +1,14 @@
 package cn.edu.sjucc.service;
 
-import org.omg.CORBA.UserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.util.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cn.edu.sjucc.UserExistException;
-import cn.edu.sjucc.api.UserController;
 import cn.edu.sjucc.dao.UserRepository;
 import cn.edu.sjucc.model.User;
 
@@ -18,6 +19,9 @@ public class UserService {
 	
 	@Autowired
 	private UserRepository repo;
+	
+	@Autowired
+	private CacheManager cacheManager;
 	
 	/**
 	 * 新建用户 （用户注册）。
@@ -51,5 +55,29 @@ public class UserService {
 			result = true;
 		}
 		return result;
+	}
+	
+
+	/**
+	 * 登录注册，并返回唯一的编号(token)
+	 * @param username
+	 * @return
+	 */
+	public String checkIn(String username) {
+		String temp = username + System.currentTimeMillis();
+		String token = DigestUtils.md5DigestAsHex(temp.getBytes());
+		Cache cache = cacheManager.getCache(User.CACHE_NAME);
+		cache.put(token, username);
+		return token;
+	}
+
+	/**
+	 * 根据token查询当前用户的名称。
+	 * @param token
+	 * @return
+	 */
+	public String currentUser(String token) {
+		Cache cache = cacheManager.getCache(User.CACHE_NAME);
+		return cache.get(token, String.class);
 	}
 }
